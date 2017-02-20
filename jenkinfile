@@ -26,7 +26,10 @@ node {
 
 // Login and set the project
 def projectSet(String project){
-    sh "oc new-project ${project} || echo 'Project exists'"
+    //Use a credential called wohshon
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+        sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
+    }    sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
 }
 // Creates a deployment in dev, you should have already deploy manually so that the image is there
