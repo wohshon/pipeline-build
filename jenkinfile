@@ -37,11 +37,11 @@ def projectSet(String project){
 def deployDev(String project){
     projectSet(project)
     sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
-    sh "oc new-build --name=cakephp-example openshift/php:5.6~https://github.com/wohshon/cakephp-ex || echo 'Build Exist!'"
-    sh "oc start-build cakephp-example --wait"
+    sh "oc new-build --name=cakephp-example openshift/php:5.6~https://github.com/wohshon/cakephp-ex -n ${project} || echo 'Build Exist!'"
+    sh "oc start-build cakephp-example  -n ${project} --wait"
     sleep 30
-    sh "oc new-app --image-stream=${project}/cakephp-example:latest || echo 'Application exist!'"
-    sh "oc expose svc cakephp-example || echo 'route already exist'"
+    sh "oc new-app --image-stream=${project}/cakephp-example:latest -n ${project} || echo 'Application exist!'"
+    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
 }
 
 // Tag the ImageStream from an original project to force a deployment
@@ -51,9 +51,9 @@ def deployApp(String origProject, String project, String tagname){
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:ci-cd -n ${origProject}"
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${origProject}"
     sh "oc tag ${origProject}/cakephp-example:latest ${project}/cakephp-example:${tagname}"
-    sh "oc new-app --image-stream=${project}/cakephp-example:${tagname} || echo 'Application already exist'"
+    sh "oc new-app --image-stream=${project}/cakephp-example:${tagname} -n ${project} || echo 'Application already exist'"
     sleep 10
-    sh "oc expose svc cakephp-example || echo 'route already exist'"
+    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
 }
 
 
