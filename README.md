@@ -7,7 +7,7 @@ This build config sets up a build pipeline to demo a simplified CICD flow
 	```
 	oc new-project ci-cd
 	
-	oc create -f sample-pipeline-build.yaml
+	oc create -f sample-buildconfig.yaml
 	```
 
   * create a 'dev' project
@@ -24,6 +24,7 @@ This build config sets up a build pipeline to demo a simplified CICD flow
 	oc new-app --image-stream=cakephp-example:latest
 	
 	oc expose svc cakephp-example
+	```
 
   * Start the pipeline build, the code will be deployed and promoted in the following flow
 
