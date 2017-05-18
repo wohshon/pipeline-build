@@ -25,6 +25,9 @@ This build config sets up a build pipeline to demo a simplified CICD flow
 	
 	oc expose svc cakephp-example
 	```
+  * Jenkins Plugin
+  
+    This demo uses the bindCredential Plugin, by default it is not installed. You have to install it manually. Some other plugins may be required to be upgraded as well 
 
   * Start the pipeline build, the code will be deployed and promoted in the following flow
 
