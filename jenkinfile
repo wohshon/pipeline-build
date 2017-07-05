@@ -11,7 +11,7 @@ node {
   echo 'This stage simulates automated tests'
   sleep 30
 //  sh "curl -I http://cakephp-example-myapp-dev.cloudapps.demo.com"
-sh " curl -I http://cakephp-example-myapp-dev.cloudapps-ocp34-wohshon.ddns.net"
+sh " curl -I http://cakephp-example-myapp-dev.cloudapps-ocp35-wohshon.ddns.net"
   stage 'Deploy to QA'
   echo 'Deploying to QA'
   deployApp('myapp-dev', 'myapp-qa','qa')
@@ -29,7 +29,7 @@ def projectSet(String project){
     //Use a credential called openshift-dev
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
         //sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
-        sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://master1-ocp34-wohshon.ddns.net:8443"
+        sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://master1-ocp35-wohshon.ddns.net:8443"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
