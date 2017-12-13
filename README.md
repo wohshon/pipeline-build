@@ -1,4 +1,4 @@
-## sample pipeline build for ocp 3.4
+## sample pipeline build for ocp 3.7
 
 This build config sets up a build pipeline to demo a simplified CICD flow
 
