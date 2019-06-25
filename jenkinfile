@@ -5,57 +5,59 @@ node {
 
   stage 'Deploy in Development'
   echo ' Deploy apps in development'
-  deployDev('myapp-dev')
+  deployDev('app1-dev','nodejs-demo','openshift/nodejs','https://github.com/wohshon/ocp-demo')
 
   stage 'Automated tests'
   echo 'This stage simulates automated tests'
   sleep 30
 //  sh "curl -I http://cakephp-example-myapp-dev.cloudapps.demo.com"
 //sh " curl -I http://cakephp-example-myapp-dev.apps.0f59.example.opentlc.com"
-sh " curl -I http://cakephp-example-myapp-dev.cloudapps-wohshon.ddns.net"
+//dev
+  sh " curl -I http://nodejs-demo-app1-dev.apps.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
   stage 'Deploy to QA'
   echo 'Deploying to QA'
-  deployApp('myapp-dev', 'myapp-qa','qa')
+  deployApp('app1-dev', 'app1-qa','qa','nodejs-demo')
 
   stage 'Wait for approval'
   input 'Aprove to production?'
 
   stage 'Deploy to production'
   echo 'Deploying to production'
-  deployApp('myapp-dev', 'myapp', 'prod')
+  deployApp('app1-dev', 'app1-prod', 'prod','nodejs-demo')
 }
+
 
 // Login and set the project
 def projectSet(String project){
     //Use a credential called openshift-dev
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
         //sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
-        sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://master-wohshon.ddns.net:8443"
+        sh "oc login -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com:6443"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
 }
 // Creates a deployment in dev, you should have already deploy manually so that the image is there
-def deployDev(String project){
+def deployDev(String project, String appname, String imagename, String url){
     projectSet(project)
     sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
-    sh "oc new-build --name=cakephp-example openshift/php:5.6~https://github.com/wohshon/cakephp-ex -n ${project} || echo 'Build Exist!'"
-    sh "oc start-build cakephp-example  -n ${project} --wait"
+    sh "oc new-build --name=${appname} ${imagename}~${ur} -n ${project} || echo 'Build Exist!'"
+    sh "oc start-build ${appname}  -n ${project} --wait"
     sleep 30
-    sh "oc new-app --image-stream=${project}/cakephp-example:latest -n ${project} || echo 'Application exist!'"
-    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
+    sh "oc new-app --image-stream=${project}/${appname}:latest -n ${project} || echo 'Application exist!'"
+    sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
 }
 
 // Tag the ImageStream from an original project to force a deployment
-def deployApp(String origProject, String project, String tagname){
+def deployApp(String origProject, String project, String tagname, String appname){
     projectSet(project)
     sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:ci-cd -n ${origProject}"
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${origProject}"
-    sh "oc tag ${origProject}/cakephp-example:latest ${project}/cakephp-example:${tagname}"
-    sh "oc new-app --image-stream=${project}/cakephp-example:${tagname} -n ${project} || echo 'Application already exist'"
+    sh "oc tag ${origProject}/${appname}:latest ${project}/${appname}:${tagname}"
+    sh "oc new-app --image-stream=${project}/${appname}:${tagname} -n ${project} || echo 'Application already exist'"
     sleep 10
-    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
+    sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
 }
 
 

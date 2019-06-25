@@ -1,12 +1,13 @@
 kind: "BuildConfig"
 apiVersion: "v1"
 metadata:
-  name: "myapp-pipeline"
+  name: "app1-pipeline"
 spec:
   source:
     type: "Git"
     git:
       uri: "https://github.com/wohshon/pipeline-build"
+      ref: "nodejs-app"
   strategy:
     type: "JenkinsPipeline"
     jenkinsPipelineStrategy:

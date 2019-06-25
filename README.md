@@ -15,15 +15,15 @@ This build config sets up a build pipeline to demo a simplified CICD flow
 	```
 	oc new-project myapp-dev
 	
-	oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n myapp-dev
+	oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n app1-dev
 	
-	oc new-build --name=cakephp-example openshift/php:5.6~https://github.com/wohshon/cakephp-ex
+	oc new-build --name=nodejs-demo openshift/nodejs~https://github.com/wohshon/ocp-demo
 	
-	oc start-build cakephp-example --follow
+	oc start-build nodejs-demo --follow
 
-	oc new-app --image-stream=cakephp-example:latest
+	oc new-app --image-stream=nodejs-demo:latest
 	
-	oc expose svc cakephp-example
+	oc expose svc nodejs-demo
 	```
   * Jenkins Plugin
   
@@ -31,4 +31,4 @@ This build config sets up a build pipeline to demo a simplified CICD flow
 
   * Start the pipeline build, the code will be deployed and promoted in the following flow
 
-	` myapp-dev -> myapp-qa -> myapp`
+	` app1-dev -> app1-qa -> app1-prod`
