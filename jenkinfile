@@ -33,7 +33,7 @@ def projectSet(String project){
     //Use a credential called openshift-dev
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
         //sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
-        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com:6443"
+        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-22c5.sgp-22c5.openshiftworkshop.com:6443"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
