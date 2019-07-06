@@ -78,7 +78,7 @@ def callAT(){
             verbose: true,
             credential: '',
             extraVars: '''---
-            ocp1_cluster_domain: "cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
+            ocp1_cluster_domain: "cluster-sgp-22c5.sgp-22c5.openshiftworkshop.com"
             ocp2_cluster_domain: "cluster-sin-f141.sin-f141.openshiftworkshop.com"
             oc_project: "app1"
             '''
