@@ -9,11 +9,11 @@ node {
 
   stage 'Automated tests'
   echo 'This stage simulates automated tests'
-  sleep 30
+  sleep 5
 //  sh "curl -I http://cakephp-example-myapp-dev.cloudapps.demo.com"
 //sh " curl -I http://cakephp-example-myapp-dev.apps.0f59.example.opentlc.com"
 //dev
-  sh " curl -I http://nodejs-demo-app1-dev.apps.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
+  //sh " curl -I http://nodejs-demo-app1-dev.apps.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
   stage 'Deploy to QA'
   echo 'Deploying to QA'
   deployApp('app1-dev', 'app1-qa','qa','nodejs-demo')
@@ -23,7 +23,8 @@ node {
 
   stage 'Deploy to production'
   echo 'Deploying to production'
-  deployApp('app1-dev', 'app1-prod', 'prod','nodejs-demo')
+  //deployApp('app1-dev', 'app1-prod', 'prod','nodejs-demo')
+  callAT()
 }
 
 
@@ -32,7 +33,7 @@ def projectSet(String project){
     //Use a credential called openshift-dev
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
         //sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
-        sh "oc login -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com:6443"
+        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com:6443"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
@@ -40,10 +41,10 @@ def projectSet(String project){
 // Creates a deployment in dev, you should have already deploy manually so that the image is there
 def deployDev(String project, String appname, String imagename, String url){
     projectSet(project)
-    sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
-    sh "oc new-build --name=${appname} ${imagename}~${ur} -n ${project} || echo 'Build Exist!'"
+    sh "oc policy add-role-to-user edit system:serviceaccount:jenkins:default -n ${project}"
+    sh "oc new-build --name=${appname} ${imagename}~${url} -n ${project} || echo 'Build Exist!'"
     sh "oc start-build ${appname}  -n ${project} --wait"
-    sleep 30
+    sleep 10
     sh "oc new-app --image-stream=${project}/${appname}:latest -n ${project} || echo 'Application exist!'"
     sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
 }
@@ -51,16 +52,37 @@ def deployDev(String project, String appname, String imagename, String url){
 // Tag the ImageStream from an original project to force a deployment
 def deployApp(String origProject, String project, String tagname, String appname){
     projectSet(project)
-    sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
-    sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:ci-cd -n ${origProject}"
+    sh "oc policy add-role-to-user edit system:serviceaccount:jenkins:default -n ${project}"
+    sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:jenkins -n ${origProject}"
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${origProject}"
     sh "oc tag ${origProject}/${appname}:latest ${project}/${appname}:${tagname}"
     sh "oc new-app --image-stream=${project}/${appname}:${tagname} -n ${project} || echo 'Application already exist'"
-    sleep 10
+    sleep 5
     sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
 }
 
+// Call
+def callAT(){
+     projectSet('app1-dev')
+     sh "oc delete all --selector=app=nodejs-demo -n  app1-dev"
+     ansibleTower(
+            towerServer: 'ansibleTower',
+            templateType: 'job',
+            jobTemplate: 'ocp_cloudburst_continuous_deployment',
+            importTowerLogs: true,
+            inventory: 'OCP',
+            jobTags: '',
+            skipJobTags: '',
+            limit: '',
+            removeColor: false,
+            verbose: true,
+            credential: '',
+            extraVars: '''---
+            ocp1_cluster_domain: "cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
+            ocp2_cluster_domain: "cluster-sin-f141.sin-f141.openshiftworkshop.com"
+            oc_project: "app1"
+            '''
+        )
 
 
-
-
+}
