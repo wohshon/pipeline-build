@@ -5,7 +5,7 @@ node {
 
   stage 'Deploy in Development'
   echo ' Deploy apps in development'
-  deployDev('myapp-dev')
+  deployDev('mydemoapp-dev')
 
   stage 'Automated tests'
   echo 'This stage simulates automated tests'
