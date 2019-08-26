@@ -32,8 +32,7 @@ node {
 def projectSet(String project){
     //Use a credential called openshift-dev
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-        //sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp-master1.demo.com:8443"
-        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-03b8.sgp-03b8.openshiftworkshop.com:6443"
+        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-ba8c.sgp-ba8c.open.redhat.com:6443"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
@@ -78,8 +77,8 @@ def callAT(){
             verbose: true,
             credential: '',
             extraVars: '''---
-            ocp1_cluster_domain: "cluster-sgp-03b8.sgp-03b8.openshiftworkshop.com"
-            ocp2_cluster_domain: "cluster-sin-f141.sin-f141.openshiftworkshop.com"
+            ocp1_cluster_domain: "cluster-sgp-ba8c.sgp-ba8c.open.redhat.com"
+            ocp2_cluster_domain: "cluster-sin-3118.sin-3118.open.redhat.com"
             oc_project: "app1"
             '''
         )
