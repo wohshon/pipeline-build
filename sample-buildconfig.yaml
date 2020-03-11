@@ -6,7 +6,7 @@ spec:
   source:
     type: "Git"
     git:
-      uri: "https://github.com/wohshon/pipeline-build-pte"
+      uri: "https://github.com/wohshon/pipeline-build"
       ref: "ocp3-demo"
   strategy:
     type: "JenkinsPipeline"
