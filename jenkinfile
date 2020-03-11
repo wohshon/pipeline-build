@@ -1,87 +1,59 @@
 node {
   //stage 'Git checkout'
   //echo 'Checking out repo'
-  //git url: 'https://github.com/wohshon/cakephp-ex'
 
   stage 'Deploy in Development'
   echo ' Deploy apps in development'
-  deployDev('app1-dev','nodejs-demo','openshift/nodejs','https://github.com/wohshon/ocp-demo')
+  deployDev('myapp-dev')
 
   stage 'Automated tests'
   echo 'This stage simulates automated tests'
-  sleep 5
-//  sh "curl -I http://cakephp-example-myapp-dev.cloudapps.demo.com"
-//sh " curl -I http://cakephp-example-myapp-dev.apps.0f59.example.opentlc.com"
-//dev
-  //sh " curl -I http://nodejs-demo-app1-dev.apps.cluster-sgp-c8e0.sgp-c8e0.openshiftworkshop.com"
+  sleep 30
+sh " curl -I http://cakephp-example-myapp-dev.ocp3.pubkube.net"
   stage 'Deploy to QA'
   echo 'Deploying to QA'
-  deployApp('app1-dev', 'app1-qa','qa','nodejs-demo')
+  deployApp('myapp-dev', 'myapp-qa','qa')
 
   stage 'Wait for approval'
   input 'Aprove to production?'
 
   stage 'Deploy to production'
   echo 'Deploying to production'
-  //deployApp('app1-dev', 'app1-prod', 'prod','nodejs-demo')
-  callAT()
+  deployApp('myapp-dev', 'myapp', 'prod')
 }
-
 
 // Login and set the project
 def projectSet(String project){
     //Use a credential called openshift-dev
-    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wohshon', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-        sh "oc login --insecure-skip-tls-verify -u $env.USERNAME -p $env.PASSWORD https://api.cluster-sgp-ba8c.sgp-ba8c.open.redhat.com:6443"
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'myCred', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+        sh "oc login --insecure-skip-tls-verify=true -u $env.USERNAME -p $env.PASSWORD https://ocp3.pubkube.net"
     }
     sh "oc new-project ${project} || echo 'Project exists'"
     sh "oc project ${project}"
 }
 // Creates a deployment in dev, you should have already deploy manually so that the image is there
-def deployDev(String project, String appname, String imagename, String url){
+def deployDev(String project){
     projectSet(project)
-    sh "oc policy add-role-to-user edit system:serviceaccount:jenkins:default -n ${project}"
-    sh "oc new-build --name=${appname} ${imagename}~${url} -n ${project} || echo 'Build Exist!'"
-    sh "oc start-build ${appname}  -n ${project} --wait"
-    sleep 10
-    sh "oc new-app --image-stream=${project}/${appname}:latest -n ${project} || echo 'Application exist!'"
-    sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
+    sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
+    sh "oc new-build --name=cakephp-example openshift/php:5.6~https://github.com/wohshon/cakephp-ex -n ${project} || echo 'Build Exist!'"
+    sh "oc start-build cakephp-example  -n ${project} --wait"
+    sleep 30
+    sh "oc new-app --image-stream=${project}/cakephp-example:latest -n ${project} || echo 'Application exist!'"
+    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
 }
 
 // Tag the ImageStream from an original project to force a deployment
-def deployApp(String origProject, String project, String tagname, String appname){
+def deployApp(String origProject, String project, String tagname){
     projectSet(project)
-    sh "oc policy add-role-to-user edit system:serviceaccount:jenkins:default -n ${project}"
-    sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:jenkins -n ${origProject}"
+    sh "oc policy add-role-to-user edit system:serviceaccount:ci-cd:default -n ${project}"
+    sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:ci-cd -n ${origProject}"
     sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${origProject}"
-    sh "oc tag ${origProject}/${appname}:latest ${project}/${appname}:${tagname}"
-    sh "oc new-app --image-stream=${project}/${appname}:${tagname} -n ${project} || echo 'Application already exist'"
-    sleep 5
-    sh "oc expose svc ${appname} -n ${project} || echo 'route already exist'"
+    sh "oc tag ${origProject}/cakephp-example:latest ${project}/cakephp-example:${tagname}"
+    sh "oc new-app --image-stream=${project}/cakephp-example:${tagname} -n ${project} || echo 'Application already exist'"
+    sleep 10
+    sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
 }
 
-// Call
-def callAT(){
-     projectSet('app1-dev')
-     sh "oc delete all --selector=app=nodejs-demo -n  app1-dev"
-     ansibleTower(
-            towerServer: 'ansibleTower',
-            templateType: 'job',
-            jobTemplate: 'ocp_cloudburst_continuous_deployment',
-            importTowerLogs: true,
-            inventory: 'OCP',
-            jobTags: '',
-            skipJobTags: '',
-            limit: '',
-            removeColor: false,
-            verbose: true,
-            credential: '',
-            extraVars: '''---
-            ocp1_cluster_domain: "cluster-sgp-ba8c.sgp-ba8c.open.redhat.com"
-            ocp2_cluster_domain: "cluster-sin-3118.sin-3118.open.redhat.com"
-            oc_project: "app1"
-            '''
-        )
 
 
-}
+
