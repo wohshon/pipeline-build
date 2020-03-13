@@ -19,7 +19,7 @@ sh " curl -I http://cakephp-example-myapp-dev.ocp3.pubkube.net"
 
   stage 'Deploy to production'
   echo 'Deploying to production'
-  deployApp('myapp-dev', 'myapp', 'prod')
+  deployApp('myapp-dev', 'myapp-prod', 'prod')
 }
 
 // Login and set the project
