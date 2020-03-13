@@ -20,6 +20,8 @@ sh " curl -I http://cakephp-example-myapp-dev.ocp3.pubkube.net"
   stage 'Deploy to production'
   echo 'Deploying to production'
   deployApp('myapp-dev', 'myapp-prod', 'prod')
+
+  stage 'Deploy to Secondary Cloud Using Ansible Tower'
   echo 'deploy to 2nd OCP cluster via Ansible Tower'
   callAT()
 }
