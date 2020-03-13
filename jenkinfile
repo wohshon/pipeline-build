@@ -20,6 +20,8 @@ sh " curl -I http://cakephp-example-myapp-dev.ocp3.pubkube.net"
   stage 'Deploy to production'
   echo 'Deploying to production'
   deployApp('myapp-dev', 'myapp-prod', 'prod')
+  echo 'deploy to 2nd OCP cluster via Ansible Tower'
+  callAT()
 }
 
 // Login and set the project
@@ -54,6 +56,24 @@ def deployApp(String origProject, String project, String tagname){
     sh "oc expose svc cakephp-example -n ${project} || echo 'route already exist'"
 }
 
+def callAT(){
+//     projectSet('app1-dev')
+//     sh "oc delete all --selector=app=nodejs-demo -n  app1-dev"
+     ansibleTower(
+            towerServer: 'ansibleTower',
+            templateType: 'job',
+            jobTemplate: 'ocp_cloudburst_continuous_deployment',
+            importTowerLogs: true,
+            inventory: 'OCP',
+            jobTags: '',
+            skipJobTags: '',
+            limit: '',
+            removeColor: false,
+            verbose: true,
+            credential: '',
+            extraVars: '''---
+            my_var:  "Jenkins Test"'''
+        )
 
 
 
