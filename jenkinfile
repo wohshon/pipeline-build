@@ -62,9 +62,9 @@ def callAT(){
      ansibleTower(
             towerServer: 'ansibleTower',
             templateType: 'job',
-            jobTemplate: 'ocp_cloudburst_continuous_deployment',
+            jobTemplate: 'ocp__continuous_deployment',
             importTowerLogs: true,
-            inventory: 'OCP',
+            inventory: 'ocp_cicd_demo',
             jobTags: '',
             skipJobTags: '',
             limit: '',
